@@ -121,65 +121,15 @@ def main():
     #writetos3(dfren)
     writetoredshiftdb(dfren)
 
-def writetos3(spark_df):
-    # Define output path in S3
-    output_path = "s3://miscellaneous-vertica-archive-data/temp-csv-output/"
-    final_output_key = "final_output.csv"
-    
-    print(f"output_path : {output_path}")
-    print(f"final_output_key : {final_output_key}")
-    
-    # Write the DataFrame to CSV
-    # df.write.mode("overwrite") \
-     #   .option("header", "true") \
-     #  .csv(output_path)
-    
-    spark_df.coalesce(1).write.mode("overwrite") \
-        .option("header", "true") \
-        .csv(output_path)
-    
-    # Pause briefly to ensure files are written
-    time.sleep(5)
-    
-    # Rename part file to final_output.csv using boto3
-    s3 = boto3.client("s3")
-    bucket = "miscellaneous-vertica-archive-data"
-    prefix = "temp-csv-output/"
-    
-    #get list of files from the specified bucket
-    response = s3.list_objects_v2(Bucket=bucket, Prefix=prefix)
-    part_file = None
-    
-    #loop through the bucket list and check to see if it is file with csv extension
-    for obj in response.get("Contents", []):
-        key = obj["Key"]
-        if key.endswith(".csv"):
-            part_file = key
-            break
-    
-    #if csv file founD in the above list, rename the file name as desired
-    if part_file:
-        print(f"Renaming {part_file} to {final_output_key}")
-    
-        s3.copy_object(
-            Bucket=bucket,
-            CopySource={"Bucket": bucket, "Key": part_file},
-            Key=final_output_key
-        )
-    
-        # Optional: clean up temp directory
-        s3.delete_object(Bucket=bucket, Key=part_file)
-        
-
 def writetoredshiftdb(spark_df):
     # Write to Redshift
-    USERNAME               = 'redshift-aws-user'  # USERNAME FOR CLUSTER
-    PASSWORD               = 'Cho2aepHevu6uJec68r'  # PASSWORD
-    REDSHIFT_DATABASE_NAME = 'prod_ecu_warehouse'
-    REDSHIFT_ROLE          = 'arn:aws:iam::581621506601:role/redshift_role'
-    #HOST                   = "central-redshift-1.c1tpicmeh71v.us-east-1.redshift.amazonaws.com"
-    REDSHIFT_DRIVER        = "io.github.spark_redshift_community.spark.redshift"
-    REDSHIFT_JDBC_URL      = f"jdbc:redshift://central-redshift-1.c1tpicmeh71v.us-east-1.redshift.amazonaws.com:5439/{REDSHIFT_DATABASE_NAME}"
+    USERNAME               = 'abc-user'  # USERNAME FOR CLUSTER
+    PASSWORD               = 'password'  # PASSWORD
+    REDSHIFT_DATABASE_NAME = 'dbname'
+    REDSHIFT_ROLE          = 'arn:aws:iam::123456789:role/redshift_role'
+    #HOST                   = "hostname"
+    REDSHIFT_DRIVER        = "redshift-driver"
+    REDSHIFT_JDBC_URL      = f"jdbc_url-withport-dbname"
     REDSHIFT_URL           = REDSHIFT_JDBC_URL + "?user=" + USERNAME + "&password=" + PASSWORD
     IAM_ROLE_ARN           = REDSHIFT_ROLE
 
@@ -190,7 +140,7 @@ def writetoredshiftdb(spark_df):
     #    "dbtable": "test.customers",
     #    "database": "prod_ecu_warehouse"
     #},
-    redshift_tmp_dir="s3://miscellaneous-vertica-archive-data/redshift-temp-folder/"  # 👈 temp S3 path for staging
+    redshift_tmp_dir="s3://vertica-data/redshift-temp-folder/"  # 👈 temp S3 path for staging
     
     spark_df.coalesce(1).write \
         .format(REDSHIFT_DRIVER) \
