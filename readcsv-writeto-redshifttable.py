@@ -21,7 +21,7 @@ spark = glueContext.spark_session
 
 def main():
     # Define S3 path of the CSV file
-    s3_path = "s3://miscellaneous-vertica-archive-data/customers.csv"
+    s3_path = "s3://bucketname/customers.csv"
     
     # Read CSV file into a DynamicFrame
     dynamic_frame = glueContext.create_dynamic_frame.from_options(
@@ -137,8 +137,8 @@ def writetoredshiftdb(spark_df):
     #frame=dynamic_frame,
     #catalog_connection="your-redshift-connection-name",  # 👈 Glue connection to Redshift
     #connection_options={
-    #    "dbtable": "test.customers",
-    #    "database": "prod_ecu_warehouse"
+    #    "dbtable": "test.table",
+    #    "database": "databasename"
     #},
     redshift_tmp_dir="s3://vertica-data/redshift-temp-folder/"  # 👈 temp S3 path for staging
     
