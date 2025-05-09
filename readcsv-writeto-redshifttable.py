@@ -142,7 +142,7 @@ def writetoredshiftdb(spark_df):
     #},
     redshift_tmp_dir="s3://vertica-data/redshift-temp-folder/"  # 👈 temp S3 path for staging
     
-    spark_df.coalesce(1).write \
+    spark_df.write \
         .format(REDSHIFT_DRIVER) \
         .option("url", REDSHIFT_URL) \
         .option("dbtable", f"test.customers1") \
